@@ -1,0 +1,24 @@
+[project]
+name = "sona-backend"
+version = "0.1.0"
+description = "FastAPI backend for Sona AI music persona recommendations"
+requires-python = ">=3.9"
+dependencies = [
+  "fastapi>=0.115.0",
+  "httpx>=0.27.0",
+  "python-dotenv>=1.0.1",
+  "uvicorn[standard]>=0.30.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0.0",
+  "ruff>=0.6.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]

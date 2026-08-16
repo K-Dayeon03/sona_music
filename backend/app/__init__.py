@@ -1,0 +1,1 @@
+"""Sona FastAPI backend package."""

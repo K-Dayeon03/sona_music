@@ -1,0 +1,10 @@
+{
+  "description": "Discover personalized music playlists curated by AI personas based on unique tastes and moods, transforming your music exploration experience.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
