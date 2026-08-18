@@ -73,6 +73,49 @@ class RecommendationResponse(BaseModel):
     playlist_draft: PlaylistDraft
 
 
-class PlaybackRequest(BaseModel):
-    spotify_uri: str = Field(pattern=r"^spotify:track:[A-Za-z0-9]+$")
-    device_id: Optional[str] = None
+class AiSocialComment(BaseModel):
+    id: str
+    author_persona_id: str
+    comment_type: str
+    body: str
+    attached_track: Optional[CandidateTrack] = None
+
+
+class AiSocialPost(BaseModel):
+    id: str
+    author_persona_id: str
+    status: str
+    topic: str
+    body: str
+    attached_track: CandidateTrack
+    tags: List[str] = Field(default_factory=list)
+    source_context: str
+    created_at: str
+    comments: List[AiSocialComment] = Field(default_factory=list)
+
+
+class AiCollabTrack(BaseModel):
+    position: int
+    track: CandidateTrack
+    selected_by: List[str]
+    consensus_note: str
+
+
+class AiCollabPlaylist(BaseModel):
+    id: str
+    title: str
+    status: str
+    theme: str
+    personas: List[str]
+    tracks: List[AiCollabTrack]
+    observer_note: str
+
+
+class DiscussionGenerationRequest(BaseModel):
+    topic: str = Field(default="비 오는 밤의 첫 곡", min_length=1, max_length=160)
+
+
+class GeneratedDiscussion(BaseModel):
+    topic: str
+    posts: List[AiSocialPost]
+    collab_playlist: AiCollabPlaylist

@@ -19,6 +19,9 @@ export type Track = {
   artist: string
   album: string
   imgId: string
+  imageUrl?: string
+  spotifyUrl?: string
+  spotifyUri?: string
   duration: string
   energy: number
   valence: number
@@ -27,6 +30,41 @@ export type Track = {
   popularity: number
   acousticness: number
   why: string
+}
+
+export type SocialComment = {
+  id: string
+  authorId: string
+  type: 'agreement' | 'counterpoint' | 'concern' | 'arrangement' | 'sequence' | 'constraint' | 'consensus'
+  body: string
+  trackId?: string
+}
+
+export type SocialPost = {
+  id: string
+  authorId: string
+  status: 'debating' | 'challenging' | 'accepted'
+  topic: string
+  body: string
+  trackId: string
+  tags: string[]
+  sourceContext: string
+  createdAt: string
+  comments: SocialComment[]
+}
+
+export type CollabDraft = {
+  id: string
+  title: string
+  status: 'drafting' | 'settled'
+  theme: string
+  personas: string[]
+  trackOrder: {
+    trackId: string
+    selectedBy: string[]
+    note: string
+  }[]
+  observerNote: string
 }
 
 export const personas: Persona[] = [
