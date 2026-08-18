@@ -1,9 +1,7 @@
 from typing import Iterable, List, Optional, Set
 from uuid import uuid4
 
-from fastapi import HTTPException
-
-from app.data.seed import MOCK_TRACKS, PERSONAS
+from app.data.seed import PERSONAS
 from app.models.schemas import (
     CandidateTrack,
     Persona,
@@ -13,7 +11,7 @@ from app.models.schemas import (
     RecommendationResponse,
     TrackRecommendation,
 )
-from app.services.spotify_api_service import get_saved_tracks, search_tracks
+from app.services.spotify_catalog_service import search_tracks_for_queries
 
 
 PROMPT_TAG_HINTS = {
@@ -74,83 +72,17 @@ async def create_recommendations(request: RecommendationRequest) -> Recommendati
         ),
     )
 
-
-def create_mock_recommendations(request: RecommendationRequest) -> RecommendationResponse:
-    return _create_response_from_candidates(
-        request=request,
-        candidates=MOCK_TRACKS,
-        actual_sources=["mock"],
-    )
-
-
-def _create_response_from_candidates(
-    request: RecommendationRequest,
-    candidates: List[CandidateTrack],
-    actual_sources: List[str],
-) -> RecommendationResponse:
-    selected_personas = _select_personas(request.persona_ids)
-    prompt_tags = _extract_prompt_tags(request.prompt)
-
-    groups = [
-        PersonaRecommendationGroup(
-            persona=persona,
-            recommendations=_rank_tracks_for_persona(
-                persona=persona,
-                prompt_tags=prompt_tags,
-                candidates=candidates,
-                limit=request.limit,
-            ),
-        )
-        for persona in selected_personas
-    ]
-
-    draft_track_ids = _collect_playlist_track_ids(groups, request.limit)
-
-    return RecommendationResponse(
-        session_id=str(uuid4()),
-        prompt=request.prompt,
-        candidate_sources=actual_sources,
-        persona_results=groups,
-        playlist_draft=PlaylistDraft(
-            name=_draft_name(request.prompt),
-            description="사용자 승인 전까지 Spotify에는 아무 작업도 실행하지 않는 추천 초안입니다.",
-            track_ids=draft_track_ids,
-            default_public=False,
-        ),
-    )
-
-
 async def _collect_candidates(
     request: RecommendationRequest,
 ) -> tuple[List[CandidateTrack], List[str]]:
-    tracks: List[CandidateTrack] = []
-    sources: List[str] = []
-
-    try:
-        if "saved_tracks" in request.candidate_sources:
-            saved_tracks = await get_saved_tracks(limit=min(request.limit * 2, 20))
-            tracks.extend(saved_tracks)
-            if saved_tracks:
-                sources.append("saved_tracks")
-
-        if "search" in request.candidate_sources:
-            search_results = await search_tracks(
-                query=_search_query_from_prompt(request.prompt),
-                limit=min(request.limit * 2, 10),
-            )
-            tracks.extend(search_results)
-            if search_results:
-                sources.append("search")
-    except HTTPException as exc:
-        if exc.status_code != 401:
-            raise
-
-    unique_tracks = _dedupe_tracks(tracks)
-    if unique_tracks:
-        prompt_tags = _extract_prompt_tags(request.prompt)
-        return [_track_with_prompt_tags(track, prompt_tags) for track in unique_tracks], sources
-
-    return MOCK_TRACKS, ["mock"]
+    prompt_tags = _extract_prompt_tags(request.prompt)
+    queries = _search_queries_for_prompt(request.prompt)
+    tracks = search_tracks_for_queries(
+        queries=queries,
+        limit_per_query=max(6, min(request.limit, 12)),
+        total_limit=max(request.limit * 4, 24),
+    )
+    return [_track_with_prompt_tags(track, prompt_tags) for track in tracks], ["spotify_search"]
 
 
 def _select_personas(persona_ids: Optional[List[str]]) -> List[Persona]:
@@ -170,6 +102,33 @@ def _extract_prompt_tags(prompt: str) -> Set[str]:
             tags.update(keyword_tags)
 
     return tags
+
+
+def _search_queries_for_prompt(prompt: str) -> List[str]:
+    queries = [prompt]
+    if any(keyword in prompt for keyword in ["비", "밤", "새벽", "우울"]):
+        queries.extend(["rainy night indie", "late night ambient", "dream pop night"])
+    if any(keyword in prompt for keyword in ["전환", "운동", "댄스", "신나는"]):
+        queries.extend(["dance pop energy", "soft house night", "electronic pulse"])
+    if any(keyword in prompt for keyword in ["낯선", "인디", "질감"]):
+        queries.extend(["experimental indie texture", "leftfield indie", "art pop strange"])
+    if any(keyword in prompt for keyword in ["집중", "공부", "일", "오후"]):
+        queries.extend(["focus instrumental electronic", "minimal ambient study", "neo classical focus"])
+    queries.append(f"{prompt} music")
+    return _dedupe_queries(queries)
+
+
+def _dedupe_queries(queries: Iterable[str]) -> List[str]:
+    result = []
+    seen = set()
+    for query in queries:
+        cleaned_query = " ".join(query.strip().split())
+        lowered_query = cleaned_query.lower()
+        if not cleaned_query or lowered_query in seen:
+            continue
+        seen.add(lowered_query)
+        result.append(cleaned_query)
+    return result
 
 
 def _rank_tracks_for_persona(
@@ -283,35 +242,5 @@ def _draft_name(prompt: str) -> str:
     return f"Sona 추천 - {cleaned}"
 
 
-def _dedupe_tracks(tracks: List[CandidateTrack]) -> List[CandidateTrack]:
-    result: List[CandidateTrack] = []
-    seen = set()
-
-    for track in tracks:
-        dedupe_key = track.spotify_uri or f"{track.title}:{track.artist}".lower()
-        if dedupe_key in seen:
-            continue
-        seen.add(dedupe_key)
-        result.append(track)
-
-    return result
-
-
 def _track_with_prompt_tags(track: CandidateTrack, prompt_tags: Set[str]) -> CandidateTrack:
     return track.model_copy(update={"tags": sorted(set(track.tags).union(prompt_tags))})
-
-
-def _search_query_from_prompt(prompt: str) -> str:
-    cleaned = " ".join(prompt.strip().split())
-    if not cleaned:
-        return "Korean indie"
-
-    if any(keyword in cleaned for keyword in ["비", "밤", "새벽"]):
-        return f"{cleaned} chill"
-    if any(keyword in cleaned for keyword in ["집중", "공부", "일"]):
-        return f"{cleaned} focus instrumental"
-    if any(keyword in cleaned for keyword in ["운동", "댄스", "신나는"]):
-        return f"{cleaned} dance pop"
-    if any(keyword in cleaned for keyword in ["인디", "낯선"]):
-        return f"{cleaned} indie"
-    return cleaned

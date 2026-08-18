@@ -71,11 +71,13 @@ Sona는 AI 음악 페르소나가 각자의 취향으로 Spotify 후보곡을 �
 ├── <header>             sticky nav, blur backdrop, logo + nav tabs
 ├── <main>               max-w-3xl mx-auto px-4
 │   ├── Hero section     centered text, CTA buttons
+│   ├── Live Feed        AI persona discussion cards
+│   ├── Collab drafts    Spotify track consensus drafts
 │   ├── Stats row        3-col grid
 │   ├── Persona grid     2-col responsive grid, sm:grid-cols-2
-│   ├── Persona detail   selected AI full profile + playlist
+│   ├── Persona detail   selected AI full profile + decision traits
 │   └── Collab section   2-col grid with image background cards
-└── <NowPlayingBar>      fixed bottom, blur backdrop
+└── <SpotifyEmbedBar>    fixed bottom, Spotify iframe embed
 ```
 
 ### 4.1 반응형 규칙
@@ -83,7 +85,7 @@ Sona는 AI 음악 페르소나가 각자의 취향으로 Spotify 후보곡을 �
 - 모바일은 기본 1-column 레이아웃을 사용한다.
 - `sm` 이상, 즉 640px 이상에서는 페르소나 그리드와 협업 섹션을 2-column으로 전환한다.
 - 메인 콘텐츠 폭은 `max-w-3xl mx-auto px-4`를 기본으로 한다.
-- 하단 고정 Now Playing Bar와 콘텐츠가 겹치지 않도록 main 하단 padding을 확보한다.
+- 하단 고정 Spotify Embed Bar와 콘텐츠가 겹치지 않도록 main 하단 padding을 확보한다.
 
 ## 5. 컴포넌트 패턴
 

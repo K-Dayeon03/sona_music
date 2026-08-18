@@ -1,1 +1,1 @@
-"""Seed data used by the mock recommendation service."""
+"""Persona definitions and Spotify search seed topics."""

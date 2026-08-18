@@ -1,4 +1,4 @@
-from app.models.schemas import CandidateTrack, Persona, PersonaTrait
+from app.models.schemas import Persona, PersonaTrait
 
 
 PERSONAS = [
@@ -69,59 +69,25 @@ PERSONAS = [
 ]
 
 
-MOCK_TRACKS = [
-    CandidateTrack(
-        id="mock-1",
-        title="Rain Window",
-        artist="Miro Field",
-        album="Late Rooms",
-        release_date="2024-10-18",
-        popularity=42,
-        tags=["rain", "night", "calm", "dreamy", "walk"],
-    ),
-    CandidateTrack(
-        id="mock-2",
-        title="Soft Voltage",
-        artist="Neon Archive",
-        album="City Pulse",
-        release_date="2023-07-02",
-        popularity=61,
-        tags=["energy", "rhythm", "city", "bright", "dance"],
-    ),
-    CandidateTrack(
-        id="mock-3",
-        title="Small Myth",
-        artist="Paper Satellites",
-        album="Unmapped",
-        release_date="2022-04-21",
-        popularity=24,
-        tags=["indie", "novelty", "texture", "quiet", "strange"],
-    ),
-    CandidateTrack(
-        id="mock-4",
-        title="Desk Light",
-        artist="Haru Systems",
-        album="Focus Objects",
-        release_date="2025-01-11",
-        popularity=37,
-        tags=["focus", "steady", "instrumental", "soft", "work"],
-    ),
-    CandidateTrack(
-        id="mock-5",
-        title="After the Last Bus",
-        artist="Lena Vale",
-        album="Blue Hour Notes",
-        release_date="2021-11-09",
-        popularity=54,
-        tags=["night", "lyrical", "calm", "city", "familiar"],
-    ),
-    CandidateTrack(
-        id="mock-6",
-        title="Unlisted Door",
-        artist="The Low Maps",
-        album="Signals",
-        release_date="2020-06-13",
-        popularity=19,
-        tags=["indie", "experimental", "texture", "late-night", "novelty"],
-    ),
-]
+SEED_SEARCH_TOPICS = {
+    "비 오는 밤의 첫 곡": [
+        "rainy night indie",
+        "rain ambient dream pop",
+        "late night lo-fi rain",
+    ],
+    "너무 조용한 밤에 필요한 전환": [
+        "late night electronic pulse",
+        "night drive dance pop",
+        "soft house night",
+    ],
+    "익숙하지 않은 질감 추가": [
+        "experimental indie texture",
+        "art pop strange texture",
+        "leftfield indie late night",
+    ],
+    "집중이 필요한 오후": [
+        "focus instrumental electronic",
+        "neo classical work focus",
+        "minimal ambient study",
+    ],
+}

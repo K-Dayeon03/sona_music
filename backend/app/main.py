@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers import auth, personas, recommendations, spotify
+from app.routers import personas, recommendations, social, spotify_catalog
 
 app = FastAPI(
     title="Sona API",
@@ -11,12 +11,8 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:8000",
-        "http://localhost:8443",
-    ],
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -29,5 +25,5 @@ def health_check():
 
 app.include_router(personas.router, prefix="/api")
 app.include_router(recommendations.router, prefix="/api")
-app.include_router(auth.router, prefix="/api")
-app.include_router(spotify.router, prefix="/api")
+app.include_router(social.router, prefix="/api")
+app.include_router(spotify_catalog.router, prefix="/api")
